@@ -1,5 +1,3 @@
-#ifndef TIMESTAMP_H
-#define TIMESTAMP_H
 #include <time.h>
 #include "mymuduo/utils/Timestamp.h"
 
@@ -32,9 +30,4 @@ std::string Timestamp::toString() const
              tm_time->tm_sec);
     return buf;
 }
-#endif
-// #include <iostream>
-// int main() {
-//     std::cout << Timestamp::now().toString() << std::endl;
-//     return 0;
-// }
+

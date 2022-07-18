@@ -12,11 +12,13 @@ include_directories(${PROJECT_SOURCE_DIR})
 add_subdirectory(mymuduo/net)
 add_subdirectory(mymuduo/utils)
 add_subdirectory(mymuduo/http)
+add_subdirectory(mymuduo/sql)
 
 file(GLOB_RECURSE cpp_files 
 ${PROJECT_SOURCE_DIR}/mymuduo/net/*.cpp
 ${PROJECT_SOURCE_DIR}/mymuduo/http/*.cpp
-${PROJECT_SOURCE_DIR}/mymuduo/utils/*.cpp)
+${PROJECT_SOURCE_DIR}/mymuduo/utils/*.cpp
+${PROJECT_SOURCE_DIR}/mymuduo/sql/*.cpp)
 
 # 编译动态库
 add_library(mymuduo SHARED ${cpp_files})

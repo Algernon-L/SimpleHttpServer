@@ -3,6 +3,8 @@
 #include <mymuduo/http/HttpResponse.h>
 #include <mymuduo/net/EventLoop.h>
 #include <mymuduo/utils/Logger.h>
+#include <mymuduo/sql/SqlOperation.h>
+#include <mymuduo/sql/SqlConnectionPool.h>
 
 #include <iostream>
 #include <map>
@@ -11,9 +13,35 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <string>
+#include <regex>
 
-extern char favicon[555];
 bool benchmark = false;
+
+// 验证正则表达式
+std::string pattern = "^[0-9a-zA-Z_]{5,16}$";
+std::regex re(pattern);
+bool validateString(const std::string &s){
+  return std::regex_match(s, re);
+}
+
+// 将文件作为响应报文
+void fileToString(const char *filename, HttpResponse* resp){
+  struct stat file_stat;
+  if(stat(filename, &file_stat) < 0){
+    resp->setStatusCode(HttpResponse::k404NotFound);
+    resp->setStatusMessage("Not Found");
+    resp->setCloseConnection(true);
+    return;
+  };
+  resp->setStatusCode(HttpResponse::k200Ok);
+  resp->setStatusMessage("OK");
+  int fd = open(filename, O_RDONLY);
+  void *mapFile = ::mmap(NULL, file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  char *pf = static_cast<char*>(mapFile);
+  resp->setBody(std::string(pf, pf + file_stat.st_size));
+  close(fd);
+  ::munmap(mapFile, file_stat.st_size);
+}
 
 // 传入httpserver中的httpcallback，
 // 通过onMessage->onRequest->httpCallback调用
@@ -21,6 +49,7 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
 {
   // 输出请求
   std::cout << "Headers " << req.methodString() << " " << req.path() << std::endl;
+
   if (!benchmark)
   {
     // 保存请求信息
@@ -30,125 +59,84 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
       std::cout << header.first << ": " << header.second << "\n";
     }
   }
-  // 路径对应的resp
-  if (req.path() == "/")
-  {
-    resp->setStatusCode(HttpResponse::k200Ok);
-    resp->setStatusMessage("OK");
-    resp->setContentType("text/html");
-    resp->addHeader("Server", "Muduo");
-    std::string now = Timestamp::now().toString();
-    resp->setBody("<html><head><title>This is title</title></head>"
-        "<body><h1>Hello</h1>Now is " + now +
-        "</body></html>");
-  }
-  else if (req.path() == "/favicon.ico")
-  {
-    resp->setStatusCode(HttpResponse::k200Ok);
-    resp->setStatusMessage("OK");
-    resp->setContentType("image/png");
-    resp->setBody(std::string(favicon, sizeof favicon));
-  }
-  else if (req.path() == "/hello")
-  {
-    resp->setStatusCode(HttpResponse::k200Ok);
-    resp->setStatusMessage("OK");
-    resp->setContentType("text/plain");
-    resp->addHeader("Server", "Muduo");
-    resp->setBody("hello, world!\n");
-  }
-  else if (req.path() == "/testimage")
-  {
-    resp->setStatusCode(HttpResponse::k200Ok);
-    resp->setStatusMessage("OK");
-    //resp->setContentType("text/html");
-    // 打开文件
-    const char* file_addr = "../root/picture.html";
-    struct stat file_stat;
-    stat(file_addr, &file_stat);
-    int fd = open(file_addr, O_RDONLY);
-    char buf[1024];
-    int readcnt = read(fd, buf, file_stat.st_size);
-    resp->setBody(buf);
-    close(fd);
-  }
-  else if (req.path() == "/xxx.jpg")
-  {
-    resp->setStatusCode(HttpResponse::k200Ok);
-    resp->setStatusMessage("OK");
-    //resp->setContentType("text/html");
-    // 打开文件
-    const char* file_addr = "../root/xxx.jpg";
-    struct stat file_stat;
-    stat(file_addr, &file_stat);
-    int fd = open(file_addr, O_RDONLY);
-    char* buf = (char*)malloc(file_stat.st_size);
-    int readcnt = read(fd, buf, file_stat.st_size);
-    resp->setBody(std::string(buf, file_stat.st_size));
-    close(fd);
-  }
-  else if (req.path() == "/testvideo")
-  {
-    resp->setStatusCode(HttpResponse::k200Ok);
-    resp->setStatusMessage("OK");
-    //resp->setContentType("text/html");
-    // 打开文件
-    const char* file_addr = "../root/video.html";
-    struct stat file_stat;
-    stat(file_addr, &file_stat);
-    int fd = open(file_addr, O_RDONLY);
-    char buf[1024];
-    int readcnt = read(fd, buf, file_stat.st_size);
-    resp->setBody(buf);
-    close(fd);
-  }
-  else if (req.path() == "/xxx.mp4")
-  {
-    resp->setStatusCode(HttpResponse::k200Ok);
-    resp->setStatusMessage("OK");
-    //resp->setContentType("text/html");
-    // 打开文件
-    const char* file_addr = "../root/xxx.mp4";
-    struct stat file_stat;
-    stat(file_addr, &file_stat);
-    int fd = open(file_addr, O_RDONLY);
-    char* buf = (char*)malloc(file_stat.st_size);
-    int readcnt = read(fd, buf, file_stat.st_size);
-    resp->setBody(std::string(buf, file_stat.st_size));
-    close(fd);
-  }
-  else if (req.path() == "/testpdf")
-  {
-    resp->setStatusCode(HttpResponse::k200Ok);
-    resp->setStatusMessage("OK");
-    //resp->setContentType("text/html");
-    // 打开文件
-    const char* file_addr = "../root/pdf.html";
-    struct stat file_stat;
-    stat(file_addr, &file_stat);
-    int fd = open(file_addr, O_RDONLY);
-    char buf[1024];
-    int readcnt = read(fd, buf, file_stat.st_size);
-    resp->setBody(buf);
-    close(fd);
-  }
-  else if (req.path() == "/xxx.pdf")
-  {
-    resp->setStatusCode(HttpResponse::k200Ok);
-    resp->setStatusMessage("OK");
-    //resp->setContentType("text/html");
-    // 打开文件
-    const char* file_addr = "../root/xxx.pdf";
-    struct stat file_stat;
-    stat(file_addr, &file_stat);
-    int fd = open(file_addr, O_RDONLY);
-    char* buf = (char*)malloc(file_stat.st_size);
-    int readcnt = read(fd, buf, file_stat.st_size);
-    resp->setBody(std::string(buf, file_stat.st_size));
-    close(fd);
-  }
-  else
-  {
+
+  // GET响应
+  if (req.getMethod() == HttpRequest::kGet){
+    std::string filename = req.path();
+    //路由
+    if(filename == "/"){
+      filename = "../root/login.html";
+      fileToString(filename.c_str(), resp);
+      return;
+    }
+
+    if(filename.find('.') == std::string::npos){
+      filename = "../root" + filename + ".html";
+      fileToString(filename.c_str(), resp);
+    }else{
+      filename = "../root" + filename;
+      fileToString(filename.c_str(), resp);
+    }
+  // POST响应
+  }else if(req.getMethod() == HttpRequest::kPost){
+
+    // 登录请求
+    if(req.path() == "/login"){
+      std::string body = req.getBody();
+      int namestart = body.find('=');
+      int nameend = body.find('&');
+      int passwdstart = body.find('=',nameend);
+
+      if(namestart == std::string::npos 
+      || nameend == std::string::npos 
+      || passwdstart == std::string::npos){
+        fileToString("../root/loginfail.html", resp);
+        std::cout << "npos called!" << std::endl;
+      }
+
+      std::string username = body.substr(namestart + 1, nameend - namestart - 1);
+      std::string userpasswd = body.substr(passwdstart + 1, body.size() - passwdstart - 1);
+
+      std::vector<std::string> query_res = getQueryRes(username);
+      // 验证账号密码格式 和 是否存在此用户
+      if(validateString(username) && validateString(userpasswd) && query_res.size() > 0 
+      && username == query_res[1] && userpasswd == query_res[2]){
+          fileToString("../root/index.html", resp);
+      } else{
+        fileToString("../root/loginfail.html", resp);
+      }
+    }
+    // 注册请求
+    else if(req.path() == "/register"){
+      std::string body = req.getBody();
+      int namestart = body.find('=');
+      int nameend = body.find('&');
+      int passwdstart = body.find('=',nameend);
+
+      if(namestart == std::string::npos 
+      || nameend == std::string::npos 
+      || passwdstart == std::string::npos){
+        fileToString("../root/loginfailuser404.html", resp);
+      }
+
+      std::string username = body.substr(namestart + 1, nameend - namestart - 1);
+      std::string userpasswd = body.substr(passwdstart + 1, body.size() - passwdstart - 1);
+
+      // 判断格式 and 在数据库匹配数据
+      if(validateString(username) && validateString(userpasswd)){
+        // FIXME:insert mysql data 
+        if(insertNewUser(username, userpasswd)){
+          fileToString("../root/registersucceed.html", resp);
+        }else{
+          fileToString("../root/registerfail.html", resp);
+        }
+      }
+      else{
+        fileToString("../root/registerfail.html", resp);
+      }
+    }
+  // 404响应
+  }else{
     resp->setStatusCode(HttpResponse::k404NotFound);
     resp->setStatusMessage("Not Found");
     resp->setCloseConnection(true);
@@ -159,15 +147,25 @@ int main(int argc, char* argv[])
 {
   // 可以设置线程数量 ./webserver 6
   int numThreads = 0;
+  std::string listenAddr = "0.0.0.0";
+  unsigned int listenPort = 8000;
   if (argc > 1)
   {
     benchmark = true;
     //Logger::setLogLevel(Logger::WARN);
     numThreads = atoi(argv[1]);
   }
+  if (argc > 2){
+    listenAddr = atoi(argv[2]);
+  }
+  if (argc > 3){
+    listenPort = atoi(argv[3]);
+  }
+  SqlConnectionPool::GetInstance()->init("localhost","httpguest","httpguest","simplehttpserver",3306,4,0);
+
   EventLoop loop;
   // 1.HTTP服务器初始化
-  HttpServer server(&loop, InetAddress(8000), "dummy");
+  HttpServer server(&loop, InetAddress(listenPort, listenAddr), "dummy");
   // 2.设置http回调函数
   server.setHttpCallback(onRequest);
   server.setThreadNum(numThreads);
@@ -176,76 +174,3 @@ int main(int argc, char* argv[])
   // 4.事件循环开启
   loop.loop();
 }
-
-char favicon[555] = {
-  '\x89', 'P', 'N', 'G', '\xD', '\xA', '\x1A', '\xA',
-  '\x0', '\x0', '\x0', '\xD', 'I', 'H', 'D', 'R',
-  '\x0', '\x0', '\x0', '\x10', '\x0', '\x0', '\x0', '\x10',
-  '\x8', '\x6', '\x0', '\x0', '\x0', '\x1F', '\xF3', '\xFF',
-  'a', '\x0', '\x0', '\x0', '\x19', 't', 'E', 'X',
-  't', 'S', 'o', 'f', 't', 'w', 'a', 'r',
-  'e', '\x0', 'A', 'd', 'o', 'b', 'e', '\x20',
-  'I', 'm', 'a', 'g', 'e', 'R', 'e', 'a',
-  'd', 'y', 'q', '\xC9', 'e', '\x3C', '\x0', '\x0',
-  '\x1', '\xCD', 'I', 'D', 'A', 'T', 'x', '\xDA',
-  '\x94', '\x93', '9', 'H', '\x3', 'A', '\x14', '\x86',
-  '\xFF', '\x5D', 'b', '\xA7', '\x4', 'R', '\xC4', 'm',
-  '\x22', '\x1E', '\xA0', 'F', '\x24', '\x8', '\x16', '\x16',
-  'v', '\xA', '6', '\xBA', 'J', '\x9A', '\x80', '\x8',
-  'A', '\xB4', 'q', '\x85', 'X', '\x89', 'G', '\xB0',
-  'I', '\xA9', 'Q', '\x24', '\xCD', '\xA6', '\x8', '\xA4',
-  'H', 'c', '\x91', 'B', '\xB', '\xAF', 'V', '\xC1',
-  'F', '\xB4', '\x15', '\xCF', '\x22', 'X', '\x98', '\xB',
-  'T', 'H', '\x8A', 'd', '\x93', '\x8D', '\xFB', 'F',
-  'g', '\xC9', '\x1A', '\x14', '\x7D', '\xF0', 'f', 'v',
-  'f', '\xDF', '\x7C', '\xEF', '\xE7', 'g', 'F', '\xA8',
-  '\xD5', 'j', 'H', '\x24', '\x12', '\x2A', '\x0', '\x5',
-  '\xBF', 'G', '\xD4', '\xEF', '\xF7', '\x2F', '6', '\xEC',
-  '\x12', '\x20', '\x1E', '\x8F', '\xD7', '\xAA', '\xD5', '\xEA',
-  '\xAF', 'I', '5', 'F', '\xAA', 'T', '\x5F', '\x9F',
-  '\x22', 'A', '\x2A', '\x95', '\xA', '\x83', '\xE5', 'r',
-  '9', 'd', '\xB3', 'Y', '\x96', '\x99', 'L', '\x6',
-  '\xE9', 't', '\x9A', '\x25', '\x85', '\x2C', '\xCB', 'T',
-  '\xA7', '\xC4', 'b', '1', '\xB5', '\x5E', '\x0', '\x3',
-  'h', '\x9A', '\xC6', '\x16', '\x82', '\x20', 'X', 'R',
-  '\x14', 'E', '6', 'S', '\x94', '\xCB', 'e', 'x',
-  '\xBD', '\x5E', '\xAA', 'U', 'T', '\x23', 'L', '\xC0',
-  '\xE0', '\xE2', '\xC1', '\x8F', '\x0', '\x9E', '\xBC', '\x9',
-  'A', '\x7C', '\x3E', '\x1F', '\x83', 'D', '\x22', '\x11',
-  '\xD5', 'T', '\x40', '\x3F', '8', '\x80', 'w', '\xE5',
-  '3', '\x7', '\xB8', '\x5C', '\x2E', 'H', '\x92', '\x4',
-  '\x87', '\xC3', '\x81', '\x40', '\x20', '\x40', 'g', '\x98',
-  '\xE9', '6', '\x1A', '\xA6', 'g', '\x15', '\x4', '\xE3',
-  '\xD7', '\xC8', '\xBD', '\x15', '\xE1', 'i', '\xB7', 'C',
-  '\xAB', '\xEA', 'x', '\x2F', 'j', 'X', '\x92', '\xBB',
-  '\x18', '\x20', '\x9F', '\xCF', '3', '\xC3', '\xB8', '\xE9',
-  'N', '\xA7', '\xD3', 'l', 'J', '\x0', 'i', '6',
-  '\x7C', '\x8E', '\xE1', '\xFE', 'V', '\x84', '\xE7', '\x3C',
-  '\x9F', 'r', '\x2B', '\x3A', 'B', '\x7B', '7', 'f',
-  'w', '\xAE', '\x8E', '\xE', '\xF3', '\xBD', 'R', '\xA9',
-  'd', '\x2', 'B', '\xAF', '\x85', '2', 'f', 'F',
-  '\xBA', '\xC', '\xD9', '\x9F', '\x1D', '\x9A', 'l', '\x22',
-  '\xE6', '\xC7', '\x3A', '\x2C', '\x80', '\xEF', '\xC1', '\x15',
-  '\x90', '\x7', '\x93', '\xA2', '\x28', '\xA0', 'S', 'j',
-  '\xB1', '\xB8', '\xDF', '\x29', '5', 'C', '\xE', '\x3F',
-  'X', '\xFC', '\x98', '\xDA', 'y', 'j', 'P', '\x40',
-  '\x0', '\x87', '\xAE', '\x1B', '\x17', 'B', '\xB4', '\x3A',
-  '\x3F', '\xBE', 'y', '\xC7', '\xA', '\x26', '\xB6', '\xEE',
-  '\xD9', '\x9A', '\x60', '\x14', '\x93', '\xDB', '\x8F', '\xD',
-  '\xA', '\x2E', '\xE9', '\x23', '\x95', '\x29', 'X', '\x0',
-  '\x27', '\xEB', 'n', 'V', 'p', '\xBC', '\xD6', '\xCB',
-  '\xD6', 'G', '\xAB', '\x3D', 'l', '\x7D', '\xB8', '\xD2',
-  '\xDD', '\xA0', '\x60', '\x83', '\xBA', '\xEF', '\x5F', '\xA4',
-  '\xEA', '\xCC', '\x2', 'N', '\xAE', '\x5E', 'p', '\x1A',
-  '\xEC', '\xB3', '\x40', '9', '\xAC', '\xFE', '\xF2', '\x91',
-  '\x89', 'g', '\x91', '\x85', '\x21', '\xA8', '\x87', '\xB7',
-  'X', '\x7E', '\x7E', '\x85', '\xBB', '\xCD', 'N', 'N',
-  'b', 't', '\x40', '\xFA', '\x93', '\x89', '\xEC', '\x1E',
-  '\xEC', '\x86', '\x2', 'H', '\x26', '\x93', '\xD0', 'u',
-  '\x1D', '\x7F', '\x9', '2', '\x95', '\xBF', '\x1F', '\xDB',
-  '\xD7', 'c', '\x8A', '\x1A', '\xF7', '\x5C', '\xC1', '\xFF',
-  '\x22', 'J', '\xC3', '\x87', '\x0', '\x3', '\x0', 'K',
-  '\xBB', '\xF8', '\xD6', '\x2A', 'v', '\x98', 'I', '\x0',
-  '\x0', '\x0', '\x0', 'I', 'E', 'N', 'D', '\xAE',
-  'B', '\x60', '\x82',
-};

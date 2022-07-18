@@ -1,5 +1,4 @@
-#ifndef TIMER_H
-#define TIMER_H
+#pragma once
 #include "mymuduo/utils/Atomic.h"
 #include "mymuduo/utils/Timestamp.h"
 #include <functional>
@@ -42,4 +41,4 @@ class Timer
 
   static AtomicInt64 s_numCreated_;
 };
-#endif
+

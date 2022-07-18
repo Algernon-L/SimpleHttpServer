@@ -28,6 +28,7 @@ fi
 cp -r mymuduo/http /usr/include/mymuduo
 cp -r mymuduo/net /usr/include/mymuduo
 cp -r mymuduo/utils /usr/include/mymuduo
+cp -r mymuduo/sql /usr/include/mymuduo
 
 cp `pwd`/lib/libmymuduo.so /usr/lib
 

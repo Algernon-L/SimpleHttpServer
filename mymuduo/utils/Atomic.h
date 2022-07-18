@@ -1,10 +1,4 @@
-// Use of this source code is governed by a BSD-style license
-// that can be found in the License file.
-//
-// Author: Shuo Chen (chenshuo at chenshuo dot com)
-
-#ifndef MUDUO_BASE_ATOMIC_H
-#define MUDUO_BASE_ATOMIC_H
+#pragma once
 
 #include <stdint.h>
 
@@ -82,5 +76,3 @@ class AtomicIntegerT
 };
 using AtomicInt32 = AtomicIntegerT<int32_t>;
 using AtomicInt64 = AtomicIntegerT<int64_t>;
-
-#endif  // MUDUO_BASE_ATOMIC_H

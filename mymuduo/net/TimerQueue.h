@@ -1,5 +1,4 @@
-#ifndef TIMERQUEUE_H
-#define TIMERQUEUE_H
+#pragma once
 #include <set>
 #include <vector>
 #include "mymuduo/utils/Timestamp.h"
@@ -69,4 +68,4 @@ public:
   bool callingExpiredTimers_; /* atomic */
   ActiveTimerSet cancelingTimers_;
 };
-#endif
+#pragma once

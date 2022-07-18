@@ -1,6 +1,3 @@
-#ifndef TYPE_H
-#define TYPE_H
+#pragma once
 #include<string>
 #include<string.h>
-
-#endif

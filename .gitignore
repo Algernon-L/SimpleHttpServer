@@ -3,3 +3,5 @@ build/
 *.o
 lib/
 root/xxx.*
+demo/
+.vscode/

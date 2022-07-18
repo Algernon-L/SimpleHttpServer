@@ -1,5 +1,4 @@
-#ifndef TIMERID_H
-#define TIMERID_H
+#pragma once
 #include "mymuduo/net/Timer.h"
 // 绑定序号和定时器
 class Timer;
@@ -29,4 +28,4 @@ class TimerId
   Timer* timer_;
   int64_t sequence_;
 };
-#endif
+#pragma once

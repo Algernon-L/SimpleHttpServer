@@ -1,8 +1,6 @@
-#ifndef COPYABLE_H
-#define COPYABLE_H
+#pragma once
 class copyable{
 protected:
     copyable() = default;
     ~copyable() = default;
 };
-#endif

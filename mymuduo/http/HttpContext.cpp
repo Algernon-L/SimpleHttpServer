@@ -1,5 +1,6 @@
 #include "mymuduo/net/Buffer.h"
 #include "mymuduo/http/HttpContext.h"
+#include <iostream>
 
 // 处理请求行
 // 1.设置方法GET or POST，2.设置URL，3.设置HTTP version
@@ -98,8 +99,12 @@ bool HttpContext::parseRequest(Buffer* buf, Timestamp receiveTime)
         {
           // empty line, end of header
           // FIXME:
-          state_ = kGotAll;
-          hasMore = false;
+          if(request_.getMethod() == HttpRequest::kPost){
+            state_ = kExpectBody;
+          }else{
+            state_ = kGotAll;
+            hasMore = false;
+          }
         }
         buf->retrieveUntil(crlf + 2);
       }
@@ -111,7 +116,11 @@ bool HttpContext::parseRequest(Buffer* buf, Timestamp receiveTime)
     // 请求体
     else if (state_ == kExpectBody)
     {
-      // FIXME:
+      int contentlen = stoi(request_.getHeader("Content-Length"));
+      request_.setBody(buf->peek(), buf->peek() + contentlen);
+      buf->retrieveUntil(buf->peek() + contentlen);
+      state_ = kGotAll;
+      hasMore = false;
     }
   }
   return ok;

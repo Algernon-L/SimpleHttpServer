@@ -1,3 +1,4 @@
+#pragma once
 #include "mymuduo/utils/copyable.h"
 #include "mymuduo/http/HttpRequest.h"
 

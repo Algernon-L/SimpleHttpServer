@@ -1,5 +1,4 @@
-#ifndef HTTPREQUEST_H
-#define HTTPREQUEST_H
+#pragma once
 #include "mymuduo/utils/copyable.h"
 #include "mymuduo/utils/Timestamp.h"
 
@@ -64,7 +63,7 @@ class HttpRequest : public copyable
     return method_ != kInvalid;
   }
 
-  Method method() const
+  Method getMethod() const
   { return method_; }
 
   const char* methodString() const
@@ -108,8 +107,16 @@ class HttpRequest : public copyable
     query_.assign(start, end);
   }
 
-  const std::string& query() const
+  const std::string& getQuery() const
   { return query_; }
+
+  void setBody(const char* start, const char* end)
+  {
+    body_.assign(start,end);
+  }
+
+  const std::string& getBody() const
+  { return body_;}
 
   void setReceiveTime(Timestamp t)
   { receiveTime_ = t; }
@@ -153,6 +160,7 @@ class HttpRequest : public copyable
     std::swap(version_, that.version_);
     path_.swap(that.path_);
     query_.swap(that.query_);
+    body_.swap(that.body_);
     receiveTime_.swap(that.receiveTime_);
     headers_.swap(that.headers_);
   }
@@ -162,8 +170,7 @@ class HttpRequest : public copyable
   Version version_;// http版本
   std::string path_;// url
   std::string query_;// 查询路径
+  std::string body_;// 请求体
   Timestamp receiveTime_;// 请求时间
   std::map<std::string, std::string> headers_;// 请求头结构体
 };
-
-#endif
