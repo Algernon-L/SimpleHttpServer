@@ -2,7 +2,7 @@
 
 #include "mymuduo/net/Channel.h"
 #include "mymuduo/net/EventLoop.h"
-#include "mymuduo/utils/Logger.h"
+#include "mylogger/Logger.h"
 
 const int Channel::kNoneEvent = 0;
 const int Channel::kReadEvent = EPOLLIN | EPOLLPRI;
@@ -70,7 +70,7 @@ void Channel::handleEvent(Timestamp receiveTime)
 
 void Channel::handleEventWithGuard(Timestamp receiveTime)
 {
-    LOG_INFO("channel handleEvent revents:%d\n", revents_);
+    LOG_INFO << "channel handleEvent revents: " << revents_;
     // 关闭
     if ((revents_ & EPOLLHUP) && !(revents_ & EPOLLIN)) // 当TcpConnection对应Channel 通过shutdown 关闭写端 epoll触发EPOLLHUP
     {

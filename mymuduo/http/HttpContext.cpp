@@ -1,6 +1,5 @@
 #include "mymuduo/net/Buffer.h"
 #include "mymuduo/http/HttpContext.h"
-#include <iostream>
 
 // 处理请求行
 // 1.设置方法GET or POST，2.设置URL，3.设置HTTP version

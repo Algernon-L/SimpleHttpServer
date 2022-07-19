@@ -1,9 +1,9 @@
 #include "mymuduo/http/HttpServer.h"
-#include "mymuduo/utils/Type.h"
-#include "mymuduo/utils/Logger.h"
 #include "mymuduo/http/HttpContext.h"
 #include "mymuduo/http/HttpRequest.h"
 #include "mymuduo/http/HttpResponse.h"
+#include "mylogger/Logger.h"
+#include <string>
 
 void defaultHttpCallback(const HttpRequest&, HttpResponse* resp)
 {
@@ -32,8 +32,7 @@ HttpServer::HttpServer(EventLoop* loop,
 
 void HttpServer::start()
 {
-  LOG_INFO("HttpServer[%s] starts listenning on %s\n",
-	server_.getName(),server_.getIpPort());
+  LOG_INFO << "HttpServer[" << server_.getName() << "] starts listenning on " << server_.getIpPort();
   server_.start();
 }
 

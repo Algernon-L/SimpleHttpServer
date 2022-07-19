@@ -1,0 +1,1 @@
+g++ -g -o webserver.o test.cpp -lmymuduo -lpthread -lmysqlclient -lmylogger -std=c++17

@@ -1,6 +1,6 @@
 #pragma once
 #include "mymuduo/utils/copyable.h"
-#include "mymuduo/utils/Type.h"
+#include <string>
 #include <map>
 
 class Buffer;
@@ -51,7 +51,6 @@ class HttpResponse : public copyable
  // HTTP组成：状态码，首部，实体。
   std::map<std::string, std::string> headers_;// 保存所有httpheaders
   HttpStatusCode statusCode_;// 状态码
-  // FIXME: add http version
   std::string statusMessage_;// 状态信息
   bool closeConnection_;// 是否已关闭连接
   std::string body_;// httpbody

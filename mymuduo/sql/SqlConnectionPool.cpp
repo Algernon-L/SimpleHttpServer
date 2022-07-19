@@ -1,4 +1,3 @@
-#pragma once
 #include <mysql/mysql.h>
 #include <stdio.h>
 #include <string>

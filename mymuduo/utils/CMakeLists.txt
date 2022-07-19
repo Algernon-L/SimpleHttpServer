@@ -1,6 +1,5 @@
 set(utils_SRCS
     CurrentThread.cpp
-    Logger.cpp
     Timestamp.cpp
 )
 
@@ -11,9 +10,7 @@ install(TARGETS mymuduo_utils DESTINATION lib)
 set(HEADERS
     Atomic.h
     copyable.h
-    Logger.h
     noncopyable.h
-    Type.h
     Timestamp.h
 )
 

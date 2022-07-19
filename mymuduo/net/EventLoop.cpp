@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "mymuduo/net/EventLoop.h"
-#include "mymuduo/utils/Logger.h"
+#include "mylogger/Logger.h"
 #include "mymuduo/net/Channel.h"
 #include "mymuduo/net/Poller.h"
 #include "mymuduo/net/TimerQueue.h"
@@ -38,7 +38,7 @@ int createEventfd()
     int evtfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (evtfd < 0)
     {
-        LOG_FATAL("eventfd error:%d\n", errno);
+        LOG_FATAL << "eventfd error:" << errno;
     }
     return evtfd;
 }
@@ -55,10 +55,10 @@ EventLoop::EventLoop()
     , wakeupFd_(createEventfd())
     , wakeupChannel_(new Channel(this, wakeupFd_))
 {
-    LOG_DEBUG("EventLoop created %p in thread %d\n", this, threadId_);
+    LOG_DEBUG << "EventLoop created " << this << " in thread: " << threadId_;
     if (t_loopInThisThread)
     {
-        LOG_FATAL("Another EventLoop %p exists in this thread %d\n", t_loopInThisThread, threadId_);
+        LOG_FATAL << "Another EventLoop" << t_loopInThisThread << " exists in this thread: " << threadId_;
     }
     else
     {
@@ -84,7 +84,7 @@ void EventLoop::loop()
     looping_ = true;
     quit_ = false;
 
-    LOG_INFO("EventLoop %p start looping\n", this);
+    LOG_DEBUG << "EventLoop "<<this<<" start looping";
 
     while (!quit_)
     {
@@ -104,7 +104,7 @@ void EventLoop::loop()
          **/
         doPendingFunctors();
     }
-    LOG_INFO("EventLoop %p stop looping.\n", this);
+    LOG_INFO << "EventLoop " << this << " stop looping.";
     looping_ = false;
 }
 
@@ -168,7 +168,7 @@ void EventLoop::handleRead()
     ssize_t n = read(wakeupFd_, &one, sizeof(one));
     if (n != sizeof(one))
     {
-        LOG_ERROR("EventLoop::handleRead() reads %lu bytes instead of 8\n", n);
+        LOG_ERROR << "EventLoop::handleRead() reads " << n << " bytes instead of 8";
     }
 }
 
@@ -179,7 +179,7 @@ void EventLoop::wakeup()
     ssize_t n = write(wakeupFd_, &one, sizeof(one));
     if (n != sizeof(one))
     {
-        LOG_ERROR("EventLoop::wakeup() writes %lu bytes instead of 8\n", n);
+        LOG_ERROR << "EventLoop::wakeup() writes " << n << "bytes instead of 8";
     }
 }
 
@@ -240,5 +240,3 @@ void EventLoop::cancel(TimerId timerId)
 {
   return timerQueue_->cancel(timerId);
 }
-
-// timer

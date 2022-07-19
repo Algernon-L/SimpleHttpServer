@@ -4,15 +4,16 @@
 #include <unistd.h>
 
 #include "mymuduo/net/Acceptor.h"
-#include "mymuduo/utils/Logger.h"
 #include "mymuduo/net/InetAddress.h"
+
+#include "mylogger/Logger.h"
 
 static int createNonblocking()
 {
     int sockfd = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
     if (sockfd < 0)
     {
-        LOG_FATAL("%s:%s:%d listen socket create err:%d\n", __FILE__, __FUNCTION__, __LINE__, errno);
+        LOG_INFO << "listen socket create err: " << errno;
     }
     return sockfd;
 }
@@ -43,6 +44,7 @@ void Acceptor::listen()
     listenning_ = true;
     acceptSocket_.listen();         // listen
     acceptChannel_.enableReading(); // acceptChannel_注册至Poller !重要
+    LOG_INFO << "Accpetor start listening!";
 }
 
 // listenfd有事件发生了，就是有新用户连接了
@@ -50,6 +52,7 @@ void Acceptor::handleRead()
 {
     InetAddress peerAddr;
     int connfd = acceptSocket_.accept(&peerAddr);
+    LOG_INFO << "New connection accept, from: " << peerAddr.toIpPort();
     if (connfd >= 0)
     {
         if (NewConnectionCallback_)
@@ -63,10 +66,10 @@ void Acceptor::handleRead()
     }
     else
     {
-        LOG_ERROR("%s:%s:%d accept err:%d\n", __FILE__, __FUNCTION__, __LINE__, errno);
+        LOG_ERROR << "accept err:" << errno;
         if (errno == EMFILE)
         {
-            LOG_ERROR("%s:%s:%d sockfd reached limit\n", __FILE__, __FUNCTION__, __LINE__);
+            LOG_ERROR << "sockfd reached limit";
         }
     }
 }

@@ -1,11 +1,6 @@
 #pragma once
-
-/**
- * 用户使用muduo编写服务器程序
- **/
-
 #include <functional>
-#include "mymuduo/utils/Type.h"
+#include <string>
 #include <memory>
 #include <atomic>
 #include <unordered_map>

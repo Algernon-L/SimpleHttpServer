@@ -4,7 +4,7 @@
 #include <thread>
 #include <memory>
 #include <unistd.h>
-#include "mymuduo/utils/Type.h"
+#include <string>
 #include <atomic>
 
 #include "mymuduo/utils/noncopyable.h"

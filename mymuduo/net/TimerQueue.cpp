@@ -2,10 +2,10 @@
 #include "mymuduo/net/EventLoop.h"
 #include "mymuduo/net/Timer.h"
 #include "mymuduo/net/TimerId.h"
-#include "mymuduo/utils/Logger.h"
+#include "mylogger/Logger.h"
 #include <sys/timerfd.h>
 #include <unistd.h>
-#include "mymuduo/utils/Type.h"
+#include <string>
 
 using TimerCallback = std::function<void()>;
 
@@ -17,7 +17,7 @@ int createTimerfd()
                                  TFD_NONBLOCK | TFD_CLOEXEC);
   if (timerfd < 0)
   {
-    LOG_FATAL("Failed in timerfd_create");
+    LOG_FATAL << "Failed in timerfd_create";
   }
   return timerfd;
 }
@@ -45,10 +45,10 @@ void readTimerfd(int timerfd, Timestamp now)
 {
   uint64_t howmany;
   ssize_t n = ::read(timerfd, &howmany, sizeof howmany);
-  LOG_INFO("TimerQueue::handleRead() %d at %s",howmany, now.toString());
+  LOG_INFO << "TimerQueue::handleRead() "<<howmany<<" at "<<now.toString();
   if (n != sizeof howmany)
   {
-    LOG_ERROR("TimerQueue::handleRead() reads %d bytes instead of 8", n);
+    LOG_ERROR << "TimerQueue::handleRead() reads "<<n<<"bytes instead of 8";
   }
 }
 
@@ -64,7 +64,7 @@ void resetTimerfd(int timerfd, Timestamp expiration)
   int ret = ::timerfd_settime(timerfd, 0, &newValue, &oldValue);
   if (ret)
   {
-    LOG_ERROR("timerfd_settime()");
+    LOG_ERROR << "timerfd_settime()";
   }
 }
 

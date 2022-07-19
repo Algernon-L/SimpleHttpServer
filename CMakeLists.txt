@@ -22,7 +22,3 @@ ${PROJECT_SOURCE_DIR}/mymuduo/sql/*.cpp)
 
 # 编译动态库
 add_library(mymuduo SHARED ${cpp_files})
-
-# target_include_directories(mymuduo
-#     PRIVATE
-#         ${PROJECT_SOURCE_DIR})

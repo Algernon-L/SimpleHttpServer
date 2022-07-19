@@ -29,7 +29,7 @@ public:
     // 退出事件循环
     void quit();
 
-    Timestamp pollReturnTime() const { pollRetureTime_; }
+    Timestamp pollReturnTime() const { return pollRetureTime_; }
 
     // 在当前loop中执行
     void runInLoop(Functor cb);
