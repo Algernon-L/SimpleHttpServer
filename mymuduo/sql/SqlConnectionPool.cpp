@@ -8,6 +8,7 @@
 #include <iostream>
 #include "SqlConnectionPool.h"
 #include <chrono>
+#include "mylogger/Logger.h"
 
 using namespace std;
 using namespace chrono_literals;
@@ -41,7 +42,7 @@ void SqlConnectionPool::init(string url, string User, string PassWord, string DB
 
 		if (con == NULL)
 		{
-			std::cout << "MySQL Error" << std::endl;
+			LOG_ERROR << "MYSQL init error!";
 			exit(1);
 		}
         // host==
@@ -53,7 +54,7 @@ void SqlConnectionPool::init(string url, string User, string PassWord, string DB
 
 		if (con == NULL)
 		{
-			std::cout << "MySQL Error" << std::endl;
+			LOG_ERROR << "MYSQL connection error!";
 			exit(1);
 		}
 		connList.push_back(con);
@@ -83,9 +84,10 @@ MYSQL *SqlConnectionPool::GetConnection()
         --m_FreeConn;
         ++m_CurConn;
     }else{
+		LOG_WARN << "MYSQL no spare sqlconn!";
         return nullptr;
     }
-
+	LOG_INFO << "get MYSQL conn, freeconn nums:" << GetFreeConn();
 	return con;
 }
 
@@ -103,6 +105,7 @@ bool SqlConnectionPool::ReleaseConnection(MYSQL *con)
     }
 
 	cv.notify_one();
+	LOG_INFO << "release MYSQL conn, freeconn nums:" << GetFreeConn();
 	return true;
 }
 

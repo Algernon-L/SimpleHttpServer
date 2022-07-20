@@ -168,7 +168,7 @@ int main(int argc, char* argv[])
     );
 
   // ./webserver.o 4 "0.0.0.0" 80
-  int numThreads = 0;
+  int numThreads = 4;
   std::string listenAddr = "0.0.0.0";
   unsigned int listenPort = 8000;
   if (argc > 1)
@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
     "httpguest",
     "simplehttpserver",
     3306,
-    4,
+    2,
     0
     );
 

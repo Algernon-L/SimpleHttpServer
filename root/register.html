@@ -2,15 +2,18 @@
 <html>
 <head> 
 <meta charset="utf-8"> 
-<title>登录页面</title> 
+<title>注册页面</title> 
 </head>
 <body background="./background.jpg">
+<center>
+    <form action="/register" method="post">
+    <p style="color: white;">
+    用户名: <input style="height: 30px;width:150px;font-size: 20px;" type="text" name="username" value="admin" ><br>
+    密&emsp;码: <input style="height: 30px;width:150px;font-size: 20px;" type="password" name="userpasswd" value="123456" ><br></p>
+    <input style="height: 40px;width:100px;font-size: large;"type="submit" value="注册">
+    </form>
 
-<form action="/register" method="post">
-用户名: <input type="text" name="username" value=""><br>
-密码: <input type="password" name="userpasswd" value=""><br>
-<input type="submit" value="注册">
-</form>
-
+    <p>已有账号？<a href="/login">请登录</a></p>
+</center>
 </body>
 </html>

@@ -5,3 +5,4 @@ lib/
 root/xxx.*
 demo/
 .vscode/
+/example/serverlog/

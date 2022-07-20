@@ -1,6 +1,7 @@
 #include <iostream>
 #include "SqlConnectionPool.h"
 #include "SqlOperation.h"
+#include "mylogger/Logger.h"
 
 // 返回数据[id, name, passwd]
 std::vector<std::string> getQueryRes(const std::string& username){
@@ -11,7 +12,7 @@ std::vector<std::string> getQueryRes(const std::string& username){
     // 获取数据库连接
     MYSQL *sqlconn = SqlConnectionPool::GetInstance()->GetConnection();
     if(sqlconn == nullptr){
-        std::cout << "sqlconn get failed!" << std::endl;
+        LOG_ERROR << "get MYSQL conn failed!";
         return {};
     }
 
@@ -21,14 +22,18 @@ std::vector<std::string> getQueryRes(const std::string& username){
 
     // 查询语句
     std::string query_str = "select * from userdata WHERE username='" + username + "';";
-    if(0 != mysql_real_query(sqlconn, query_str.c_str(), query_str.size()))
+    if(0 != mysql_real_query(sqlconn, query_str.c_str(), query_str.size())){
+        SqlConnectionPool::GetInstance()->ReleaseConnection(sqlconn);
         return res;
+    }
     
     // 存储结果
     query_res = mysql_store_result(sqlconn);
     res_row = mysql_fetch_row(query_res);
-    if(res_row == nullptr)return res;
-    
+    if(res_row == nullptr){
+        SqlConnectionPool::GetInstance()->ReleaseConnection(sqlconn);
+        return res;
+    }
     // 获取结果
     int fields = mysql_num_fields(query_res);
     res.resize(fields);
@@ -37,7 +42,7 @@ std::vector<std::string> getQueryRes(const std::string& username){
         printf("%s\n",res_row[i]);
         res[i] = std::string(res_row[i]);
     }
-    
+    SqlConnectionPool::GetInstance()->ReleaseConnection(sqlconn);
     return res;
 }
 
@@ -48,7 +53,7 @@ bool insertNewUser(const std::string& username, const std::string& userpasswd){
     // 获取数据库连接
     MYSQL *sqlconn = SqlConnectionPool::GetInstance()->GetConnection();
     if(sqlconn == nullptr){
-        std::cout << "sqlconn get failed!" << std::endl;
+        LOG_ERROR << "get MYSQL conn failed!";
         return {};
     }
 
@@ -60,7 +65,11 @@ bool insertNewUser(const std::string& username, const std::string& userpasswd){
     std::string query_str = "INSERT INTO userdata (username,password) VALUES ('" 
                         + username + "','" + userpasswd +"')";
     if(0 != mysql_real_query(sqlconn, query_str.c_str(), query_str.size()))
+    {
+        SqlConnectionPool::GetInstance()->ReleaseConnection(sqlconn);
         return false;
-
+    }
+    
+    SqlConnectionPool::GetInstance()->ReleaseConnection(sqlconn);
     return true;
 }
