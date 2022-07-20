@@ -1,4 +1,12 @@
-# SimpleServer
+# SimpleHttpServer
+基于Muduo C++网络库的简易版HTTP服务器
+
+采用one loop per thread + thread pool 的设计思想
+- 主Reactor响应服务端新到连接请求，子Reactor监听连接注册的IO事件。
+- 使用自动增长的应用层发送/接收双缓冲区，配合epoll LT模式确保数据读写成功。
+- 定时器使用set容器管理，使用timerfd纳入epoll，统一管理定时事件和IO事件。
+- 使用主从状态机解析HTTP报文，支持响应GET和POST请求。
+- 通过数据库操作实现用户注册和登录，可以请求服务器上的文件。
 
 ## 开发环境
 
@@ -8,7 +16,12 @@
 
 ## 编译执行
 ```shell
-./build.sh
+sudo ./build.sh
 cd example
-make
+./build.sh
+./webserver.o [线程数量] [监听的ip] [监听的端口]
 ```
+
+### References
+[[1]](https://github.com/chenshuo/muduo)Event-driven network library for multi-threaded Linux server in C++11, **Chen shuo**
+[[2]](https://github.com/qinguoyi/TinyWebServer)Linux下C++轻量级Web服务器,  **Qin guoyi**
