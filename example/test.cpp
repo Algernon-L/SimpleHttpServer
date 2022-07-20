@@ -106,8 +106,10 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
       // 验证账号密码格式 和 是否存在此用户
       if(validateString(username) && validateString(userpasswd) && query_res.size() > 0 
       && username == query_res[1] && userpasswd == query_res[2]){
+          LOG_INFO << "user: " << username << " login succeed!";
           fileToString("../root/index.html", resp);
       } else{
+        LOG_INFO << "loginfail happened! username: " << username << " userpasswd: " << userpasswd;
         fileToString("../root/loginfail.html", resp);
       }
     }
@@ -131,14 +133,15 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
       // 判断格式 and 在数据库匹配数据
       if(validateString(username) && validateString(userpasswd)){
         if(insertNewUser(username, userpasswd)){
+          LOG_INFO << "new user: " << username << " register succeed!";
           fileToString("../root/registersucceed.html", resp);
         }else{
-          LOG_INFO << "username already register!";
+          LOG_INFO << "username already register! username: " << username;
           fileToString("../root/registerfail.html", resp);
         }
       }
       else{
-        LOG_INFO << "username invaild!";
+        LOG_INFO << "username invaild!, username: " << username << " userpasswd: " << userpasswd;
         fileToString("../root/registerfail.html", resp);
       }
     }
