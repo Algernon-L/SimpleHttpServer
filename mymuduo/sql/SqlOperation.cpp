@@ -23,6 +23,7 @@ std::vector<std::string> getQueryRes(const std::string& username){
     // 查询语句
     std::string query_str = "select * from userdata WHERE username='" + username + "';";
     if(0 != mysql_real_query(sqlconn, query_str.c_str(), query_str.size())){
+        LOG_ERROR << "mysql_real_query error!";
         SqlConnectionPool::GetInstance()->ReleaseConnection(sqlconn);
         return res;
     }
@@ -31,17 +32,20 @@ std::vector<std::string> getQueryRes(const std::string& username){
     query_res = mysql_store_result(sqlconn);
     res_row = mysql_fetch_row(query_res);
     if(res_row == nullptr){
+        LOG_ERROR << "mysql query_res no data error!";
         SqlConnectionPool::GetInstance()->ReleaseConnection(sqlconn);
+        mysql_free_result(query_res);
         return res;
     }
     // 获取结果
     int fields = mysql_num_fields(query_res);
     res.resize(fields);
-    cout << "fields:" << fields << endl;
     for(int i = 0; i < fields; i++){
-        printf("%s\n",res_row[i]);
         res[i] = std::string(res_row[i]);
     }
+    
+    LOG_DEBUG << "mysql res rows:" << res.size();
+    mysql_free_result(query_res);
     SqlConnectionPool::GetInstance()->ReleaseConnection(sqlconn);
     return res;
 }
@@ -54,7 +58,7 @@ bool insertNewUser(const std::string& username, const std::string& userpasswd){
     MYSQL *sqlconn = SqlConnectionPool::GetInstance()->GetConnection();
     if(sqlconn == nullptr){
         LOG_ERROR << "get MYSQL conn failed!";
-        return {};
+        return false;
     }
 
     // 初始化结果集
@@ -66,6 +70,7 @@ bool insertNewUser(const std::string& username, const std::string& userpasswd){
                         + username + "','" + userpasswd +"')";
     if(0 != mysql_real_query(sqlconn, query_str.c_str(), query_str.size()))
     {
+        LOG_ERROR << "mysql_real_query error!";
         SqlConnectionPool::GetInstance()->ReleaseConnection(sqlconn);
         return false;
     }

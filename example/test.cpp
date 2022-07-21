@@ -22,6 +22,7 @@ bool benchmark = false;
 std::string pattern = "^[0-9a-zA-Z_]{5,16}$";
 std::regex re(pattern);
 bool validateString(const std::string &s){
+  LOG_DEBUG << "validateString:" << s; 
   return std::regex_match(s, re);
 }
 
@@ -88,6 +89,7 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
     // 登录请求
     if(req.path() == "/login"){
       std::string body = req.getBody();
+      LOG_DEBUG << "login request body: " << body;
       int namestart = body.find('=');
       int nameend = body.find('&');
       int passwdstart = body.find('=',nameend);
@@ -101,6 +103,7 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
 
       std::string username = body.substr(namestart + 1, nameend - namestart - 1);
       std::string userpasswd = body.substr(passwdstart + 1, body.size() - passwdstart - 1);
+      LOG_DEBUG << "login request username: " << username << " ,password:" << userpasswd;
 
       std::vector<std::string> query_res = getQueryRes(username);
       // 验证账号密码格式 和 是否存在此用户
@@ -110,12 +113,14 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
           fileToString("../root/index.html", resp);
       } else{
         LOG_INFO << "loginfail happened! username: " << username << " userpasswd: " << userpasswd;
+        LOG_DEBUG << "query_res.size(): " << query_res.size();
         fileToString("../root/loginfail.html", resp);
       }
     }
     // 注册请求
     else if(req.path() == "/register"){
       std::string body = req.getBody();
+      LOG_DEBUG << "register request body: " << body;
       int namestart = body.find('=');
       int nameend = body.find('&');
       int passwdstart = body.find('=',nameend);
@@ -129,6 +134,7 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
 
       std::string username = body.substr(namestart + 1, nameend - namestart - 1);
       std::string userpasswd = body.substr(passwdstart + 1, body.size() - passwdstart - 1);
+      LOG_DEBUG << "login request username: " << username << " ,password:" << userpasswd;
 
       // 判断格式 and 在数据库匹配数据
       if(validateString(username) && validateString(userpasswd)){
@@ -157,7 +163,7 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
 int main(int argc, char* argv[])
 {
   // 日志库初始化
-  LogConfig::getInstance().log_level = LogLevel::INFO;
+  LogConfig::getInstance().log_level = LogLevel::DEBUG;
   LogConfig::getInstance().addAppender(
     "appendfile",
     LogAppenderInterface::Ptr(new AsyncFileAppender("./serverlog/",FileWriterType::APPENDFILE))
