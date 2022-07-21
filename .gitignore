@@ -2,7 +2,7 @@
 build/
 *.o
 lib/
-root/xxx.*
+root/xxx*
 demo/
 .vscode/
 /example/serverlog/
