@@ -79,9 +79,11 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
     if(filename.find('.') == std::string::npos){
       filename = "../root" + filename + ".html";
       fileToString(filename.c_str(), resp);
+      return;
     }else{
       filename = "../root" + filename;
       fileToString(filename.c_str(), resp);
+      return;
     }
   // POST响应
   }else if(req.getMethod() == HttpRequest::kPost){
@@ -99,6 +101,7 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
       || passwdstart == std::string::npos){
         fileToString("../root/loginfail.html", resp);
         LOG_INFO << "string::npos happened!";
+        return;
       }
 
       std::string username = body.substr(namestart + 1, nameend - namestart - 1);
@@ -111,10 +114,12 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
       && username == query_res[1] && userpasswd == query_res[2]){
           LOG_INFO << "user: " << username << " login succeed!";
           fileToString("../root/index.html", resp);
+          return;
       } else{
         LOG_INFO << "loginfail happened! username: " << username << " userpasswd: " << userpasswd;
         LOG_DEBUG << "query_res.size(): " << query_res.size();
         fileToString("../root/loginfail.html", resp);
+        return;
       }
     }
     // 注册请求
@@ -130,6 +135,7 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
       || passwdstart == std::string::npos){
         fileToString("../root/loginfailuser404.html", resp);
         LOG_INFO << "string::npos happened!";
+        return;
       }
 
       std::string username = body.substr(namestart + 1, nameend - namestart - 1);
@@ -141,14 +147,17 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
         if(insertNewUser(username, userpasswd)){
           LOG_INFO << "new user: " << username << " register succeed!";
           fileToString("../root/registersucceed.html", resp);
+          return;
         }else{
           LOG_INFO << "username already register! username: " << username;
           fileToString("../root/registerfail.html", resp);
+          return;
         }
       }
       else{
         LOG_INFO << "username invaild!, username: " << username << " userpasswd: " << userpasswd;
         fileToString("../root/registerfail.html", resp);
+        return;
       }
     }
   // 404响应
@@ -157,13 +166,14 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
     resp->setStatusMessage("Not Found");
     resp->setCloseConnection(true);
     LOG_INFO << "404 NOT FOUND!";
+    return;
   }
 }
 
 int main(int argc, char* argv[])
 {
   // 日志库初始化
-  LogConfig::getInstance().log_level = LogLevel::DEBUG;
+  LogConfig::getInstance().log_level = LogLevel::INFO;
   LogConfig::getInstance().addAppender(
     "appendfile",
     LogAppenderInterface::Ptr(new AsyncFileAppender("./serverlog/",FileWriterType::APPENDFILE))
@@ -173,7 +183,7 @@ int main(int argc, char* argv[])
     LogAppenderInterface::Ptr(new StdoutAppender())
     );
 
-  // ./webserver.o 4 "0.0.0.0" 80
+  // ./webserver.o 4 0.0.0.0 80
   int numThreads = 4;
   std::string listenAddr = "0.0.0.0";
   unsigned int listenPort = 8000;
